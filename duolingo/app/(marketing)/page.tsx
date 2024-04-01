@@ -7,7 +7,8 @@ import {
   SignedIn,
   SignedOut
 } from "@clerk/nextjs";
-import { Link, Loader } from "lucide-react";
+import { Loader } from "lucide-react";
+import Link from "next/link";
 import Image from "next/image";
 export default function Home() {
   return (
