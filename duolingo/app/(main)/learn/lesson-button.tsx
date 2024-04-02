@@ -81,7 +81,7 @@ export const LessonButton = ({
                 }}
               >
                 <Button
-                  size="rouned"
+                  size="rounded"
                   variant={locked ? "locked" : "secondary"}
                   className="h-[70px] w-[70px] border-b-8"
                 >
@@ -98,7 +98,7 @@ export const LessonButton = ({
               </CircularProgressbarWithChildren>
             </div>
           : <Button
-              size="rouned"
+              size="rounded"
               variant={locked ? "locked" : "secondary"}
               className="h-[70px] w-[70px] border-b-8"
             >
