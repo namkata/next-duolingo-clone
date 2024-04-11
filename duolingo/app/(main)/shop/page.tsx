@@ -1,18 +1,25 @@
-import { StickyWrapper } from '@/components/sticky-wrapper';
-import { UserProgress } from '@/components/user-progress';
-import { getUserProgress } from '@/db/queries';
-import { redirect } from 'next/navigation';
-import { FeedWrapper } from '@/components/feed-wrapper';
-import Image from 'next/image';
-import { Items } from './items';
+import { StickyWrapper } from "@/components/sticky-wrapper";
+import { UserProgress } from "@/components/user-progress";
+import { getUserProgress, getUserSubscription } from "@/db/queries";
+import { redirect } from "next/navigation";
+import { FeedWrapper } from "@/components/feed-wrapper";
+import Image from "next/image";
+import { Items } from "./items";
+import { Promo } from "@/components/promo";
 
 const ShopPage = async () => {
   const userProgressData = getUserProgress();
-  const [userProgress] = await Promise.all([userProgressData]);
+  const userSubscriptionData = getUserSubscription();
+  const [userProgress, userSubscription] = await Promise.all([
+    userProgressData,
+    userSubscriptionData,
+  ]);
 
   if (!userProgress || !userProgress.activeCourse) {
-    redirect('/courses');
+    redirect("/courses");
   }
+
+  const isPro = !!userSubscription?.isActive;
 
   return (
     <div className="flex flex-row-reverse gap-[48px] px-6">
@@ -21,8 +28,9 @@ const ShopPage = async () => {
           activeCourse={userProgress?.activeCourse}
           hearts={userProgress.hearts}
           points={userProgress.points}
-          hasActiveSubscription={false}
+          hasActiveSubscription={isPro}
         />
+        {!isPro && <Promo />}
       </StickyWrapper>
       <FeedWrapper>
         <div className="w-full flex flex-col items-center">
@@ -36,7 +44,7 @@ const ShopPage = async () => {
           <Items
             hearts={userProgress.hearts}
             points={userProgress.points}
-            hasActiveSubscription={false}
+            hasActiveSubscription={isPro}
           />
         </div>
       </FeedWrapper>

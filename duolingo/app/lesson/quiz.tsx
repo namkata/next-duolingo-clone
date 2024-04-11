@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { challengeOptions, challenges, userSubscription } from '@/db/schema';
-import { useState, useTransition } from 'react';
-import { Header } from './header';
-import Confetti from 'react-confetti';
-import { QuestionBubble } from './question_bubble';
-import { Challenge } from './challenge';
-import { Footer } from './footer';
-import { upsertChallengeProgress } from '@/actions/challenge-progress';
-import { toast } from 'sonner';
-import { reduceHearts } from '@/actions/user-progress';
-import { useAudio, useMount, useWindowSize } from 'react-use';
-import { useRouter } from 'next/navigation';
-import { useHeartsModal } from '@/store/use-hearts-modal';
-import { usePracticeModal } from '@/store/use-practice-modal';
-import { ResultCard } from './result-card';
-import Image from 'next/image';
+import { challengeOptions, challenges, userSubscription } from "@/db/schema";
+import { useState, useTransition } from "react";
+import { Header } from "./header";
+import Confetti from "react-confetti";
+import { QuestionBubble } from "./question_bubble";
+import { Challenge } from "./challenge";
+import { Footer } from "./footer";
+import { upsertChallengeProgress } from "@/actions/challenge-progress";
+import { toast } from "sonner";
+import { reduceHearts } from "@/actions/user-progress";
+import { useAudio, useMount, useWindowSize } from "react-use";
+import { useRouter } from "next/navigation";
+import { useHeartsModal } from "@/store/use-hearts-modal";
+import { usePracticeModal } from "@/store/use-practice-modal";
+import { ResultCard } from "./result-card";
+import Image from "next/image";
 
 type Props = {
   initialPercentage: number;
@@ -47,28 +47,30 @@ export const Quiz = ({
       openPracticeModal();
     }
   });
-  const [correctAudio, _c, correctControls] = useAudio({ src: '/correct.wav' });
+  const [correctAudio, _c, correctControls] = useAudio({ src: "/correct.wav" });
   const [incorrectAudio, _i, incorrectControls] = useAudio({
-    src: '/incorrect.wav',
+    src: "/incorrect.wav",
   });
   const { width, height } = useWindowSize();
   const router = useRouter();
-  const [finishAudio] = useAudio({ src: '/finish.mp3', autoPlay: true });
+  const [finishAudio] = useAudio({ src: "/finish.mp3", autoPlay: true });
   const [pending, startTransition] = useTransition();
 
   const [lessonId] = useState(initialLessonId);
 
   const [hearts, setHearts] = useState(initialHearts);
-  const [percentage, setPercentage] = useState(initialPercentage);
+  const [percentage, setPercentage] = useState(() => {
+    return initialPercentage === 100 ? 0 : initialPercentage;
+  });
   const [challenges] = useState(initialLessonChallenges);
   const [activeIndex, setActiveIndex] = useState(() => {
     const uncompletedIndex = challenges.findIndex(
-      (challenge) => !challenge.completed,
+      (challenge) => !challenge.completed
     );
     return uncompletedIndex === -1 ? 0 : uncompletedIndex;
   });
   const [selectedOption, setSelectedOption] = useState<number>();
-  const [status, setStatus] = useState<'correct' | 'wrong' | 'none'>('none');
+  const [status, setStatus] = useState<"correct" | "wrong" | "none">("none");
 
   const challenge = challenges[activeIndex];
   const options = challenge?.challengeOptions ?? [];
@@ -78,7 +80,7 @@ export const Quiz = ({
   };
 
   const onSelect = (id: number) => {
-    if (status != 'none') return;
+    if (status != "none") return;
 
     setSelectedOption(id);
   };
@@ -86,15 +88,15 @@ export const Quiz = ({
   const onContinue = () => {
     if (!selectedOption) return;
 
-    if (status === 'wrong') {
-      setStatus('none');
+    if (status === "wrong") {
+      setStatus("none");
       setSelectedOption(undefined);
       return;
     }
 
-    if (status === 'correct') {
+    if (status === "correct") {
       onNext();
-      setStatus('none');
+      setStatus("none");
       setSelectedOption(undefined);
       return;
     }
@@ -109,47 +111,47 @@ export const Quiz = ({
       startTransition(() => {
         upsertChallengeProgress(challenge.id)
           .then((response) => {
-            if (hearts === 0) {
-              openPracticeModal();
-              return;
-            }
+            // if (hearts === 0) {
+            //   openPracticeModal();
+            //   return;
+            // }
 
-            if (response?.error === 'hearts') {
+            if (response?.error === "hearts") {
               openHeartsModal();
               return;
             }
             correctControls.play();
-            setStatus('correct');
+            setStatus("correct");
             setPercentage((prev) => prev + 100 / challenges.length);
 
             if (initialPercentage === 100) {
               setHearts((prev) => Math.min(prev + 1, 5));
             }
           })
-          .catch(() => toast.error('Something went wrong. Please try again!'));
+          .catch(() => toast.error("Something went wrong. Please try again!"));
       });
     } else {
       startTransition(() => {
         reduceHearts(challenge.id)
           .then((response) => {
-            if (hearts === 0) {
-              openPracticeModal();
-              return;
-            }
+            // if (hearts === 0) {
+            //   openPracticeModal();
+            //   return;
+            // }
 
-            if (response?.error === 'hearts') {
+            if (response?.error === "hearts") {
               openHeartsModal();
               return;
             }
 
             incorrectControls.play();
-            setStatus('wrong');
+            setStatus("wrong");
 
             if (response?.error) {
               setHearts((prev) => Math.max(prev - 1, 0));
             }
           })
-          .catch(() => toast.error('Something went wrong. Please try again!'));
+          .catch(() => toast.error("Something went wrong. Please try again!"));
       });
     }
   };
@@ -191,15 +193,15 @@ export const Quiz = ({
         <Footer
           lessonId={lessonId}
           status="completed"
-          onCheck={() => router.push('/learn')}
+          onCheck={() => router.push("/learn")}
         />
       </>
     );
   }
 
   const title =
-    challenge.type === 'ASSIST'
-      ? 'Select the correct meaning'
+    challenge.type === "ASSIST"
+      ? "Select the correct meaning"
       : challenge.question;
 
   return (
@@ -218,7 +220,7 @@ export const Quiz = ({
               {title}
             </h1>
             <div>
-              {challenge.type === 'SELECT' && (
+              {challenge.type === "SELECT" && (
                 <QuestionBubble question={challenge.question} />
               )}
               <Challenge

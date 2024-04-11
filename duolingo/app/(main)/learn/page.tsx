@@ -2,11 +2,13 @@ import { FeedWrapper } from "@/components/feed-wrapper";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { Header } from "./header";
 import { UserProgress } from "@/components/user-progress";
+import { Promo } from "@/components/promo";
 import {
   getCourseProgress,
   getLessonPercentage,
   getUnits,
-  getUserProgress
+  getUserProgress,
+  getUserSubscription,
 } from "@/db/queries";
 import { redirect } from "next/navigation";
 import { Unit } from "./unit";
@@ -17,17 +19,20 @@ const LearnPage = async () => {
   const courseProgressData = getCourseProgress();
   const lessonPercentageData = getLessonPercentage();
   const unitsData = getUnits();
+  const userSubscriptionData = getUserSubscription();
 
   const [
     userProcess,
     units,
     courseProgress,
-    lessonPercentage
+    lessonPercentage,
+    userSubscription,
   ] = await Promise.all([
     userProgressData,
     unitsData,
     courseProgressData,
-    lessonPercentageData
+    lessonPercentageData,
+    userSubscriptionData,
   ]);
 
   if (!userProcess || !userProcess.activeCourse) {
@@ -37,6 +42,8 @@ const LearnPage = async () => {
     redirect("/courses");
   }
 
+  const isPro = !!userSubscription?.isActive;
+
   return (
     <div className="flex flex-row-reverse gap-[48px] px-6">
       <StickyWrapper>
@@ -44,12 +51,13 @@ const LearnPage = async () => {
           activeCourse={userProcess.activeCourse}
           hearts={userProcess.hearts}
           points={userProcess.points}
-          hasActiveSubscription={false}
+          hasActiveSubscription={isPro}
         />
+        {!isPro && <Promo />}
       </StickyWrapper>
       <FeedWrapper>
         <Header title={userProcess.activeCourse.title} />
-        {units.map(unit =>
+        {units.map((unit) => (
           <div key={unit.id} className="mb-10">
             <Unit
               id={unit.id}
@@ -59,15 +67,15 @@ const LearnPage = async () => {
               lessons={unit.lessons}
               activeLesson={
                 courseProgress.activeLesson as
-                  | typeof lessons.$inferSelect & {
+                  | (typeof lessons.$inferSelect & {
                       unit: typeof unitsSchema.$inferSelect;
-                    }
+                    })
                   | undefined
               }
               activeLessonPercentage={lessonPercentage}
             />
           </div>
-        )}
+        ))}
       </FeedWrapper>
     </div>
   );
